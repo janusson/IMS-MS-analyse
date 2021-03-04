@@ -3,7 +3,7 @@
 #S:\Programming\SAMM\SAMMtrend\SAMMtrend.py
 #Usage: SAMMtrend.py is used to determine trends in DT/MS spectra following TWIMExtract processing.
 
-# functionality:
+#TODO
 #1      import csv file with pandas DONE
 #2      trim data so x= m/z, y = intensity DONE
 #3      fill x y paired data as numpy arrays - DONE
@@ -19,7 +19,7 @@ import os
 import csv
 
 def findDataDir():
-        print("Enter data directory below (must contain CSV files and folders only!):")
+        print("Paste data directory below (must contain CSV files and folders only!):")
         dataDir = os.path.expanduser(input())
         return dataDir
 dataDir = findDataDir()

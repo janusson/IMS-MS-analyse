@@ -1,24 +1,12 @@
-# .gitignore script for SAMM program extra files
-
-# working directories
-_data/
-database/
+#Working Folders
+Data/
 Misc/
 Output/
 Example Data/
 datashader-examples/
 DriftScope Program Files (backup)/
-0-Archive/
-.vscode/
-functions/
-docs/
-tools/
-archive/
-scripts/
-utils/
-resource/
 
-# working files
+#Working Files
 *.exe
 *.txt
 *.bat
@@ -32,40 +20,24 @@ resource/
 *.1dDT
 *.1dMZ
 *.1dRT
-*.code-workspace
-*.html 
 
-# tableau projects
-*.twb
-# tableau projects temp file
-*.twbr
-
-# jupyter notebooks!!!
-*.ipynb
-
-# images
+#Images
 *.jpg
 *.png
-*.html
-*.svg
-*.tiff
-*.ai
-*.eps
 
-# excel
+#Excel
 *.xlsx
-*.xls
 *.csv
 
-# misc files
+#Misc Files
 *.zip
 *.xml
 *.lnk
 
-# vscode settings
+#VSCode settings
 *.vscode
 
-# byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -73,7 +45,7 @@ __pycache__/
 # C extensions
 *.so
 
-# distribution / packaging
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -92,13 +64,13 @@ wheels/
 *.egg
 MANIFEST
 
-# pyInstaller
+# PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
-# installer logs
+# Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
 

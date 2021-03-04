@@ -1,105 +1,139 @@
-'''
-3d-twims-extract.py
-Usage: 3D Mass/Charge/Mobility data extraction from Waters .RAW TWIMS-MS files 
-using DriftScope Apex3D subprocess for high-density data extraction.
-'''
+#!python3
+"""
+Eric Janusson
+Python 3.9
+Usage: Mass/Charge/Mobility Extraction from Waters .RAW files using high-density APEX3D extraction.
+Paste data directory containing .RAW files to be exported into 3D CSV files in the given directory as "APEX Output"
+Usage: 3D Mass/Charge/Mobility data extraction from Waters .RAW TWIMS-MS files using DriftScope Apex3D subprocess.
+"""
 import os
 import sys
 import subprocess
 from pathlib import Path
 
+#   Define Driftscope paths for APEX subprocess:
 # NOTE Waters DriftScope software must be installed in the default directory.
+apexPath = Path(r"C:\DriftScope\lib\Apex3D64.exe")
+apexLogPath = Path(r"C:\DriftScope\log\_Apex3DLog.txt")
 
-apex_path = Path(r'C:/DriftScope/lib/Apex3D64.exe')
-apex_log_path = Path(r'C:/DriftScope/log/_Apex3DLog.txt')
+# Check DS install dirs for required files
 
-def get_data_dir():
-    '''
-    Search directory and subdirectories for Waters .raw experiment file folders
-
-    Returns:
-        list: path_list is a list of full .raw directories.
-    '''
-    
-    data_dir = Path(r'D:\2-SAMM\Data\EJ3-60-SAMM3-MoMonitoring\Raw Data\BA\BA4')
-    print('>>>program searches topdown from directory given.')
-    print(f'>>>enter data directory or use default: {data_dir}.')
-    user_choice = input()
-    if len(user_choice)<2:
-        print(f'using default dir.')
+def check_apex():
+    if (os.path.isfile(apexPath) and os.path.isfile(apexLogPath)):
+        pass
     else:
-        data_dir = user_choice
-    path_list = [x[0] for x in os.walk(data_dir, 1) if x[0][-4:] == '.raw']
-    print(f'Processing {len(path_list)} .raw experiment files.')
+        print(r"Log and Apex3D files not present.")
+        print(r"Check DriftScope installation is present at C:\DriftScope.")
+        sys.exit()
 
-    return path_list
+check_apex()
+# ensure DS/APEX installed
 
-# find output folder in program CWD, or create if not there 
-def get_output_dir():
-    '''
-    find data output folder in program working dir or create one.
 
-    Returns:
-        Pathlike: directory to send extracted data file
-    '''
-    output_dir = Path(r'D:/2-SAMM/Programs/SAMM/3D-TWIMS-extract/out/')
-    if os.path.isdir(output_dir):
-        output_dir
+def getDataDir():
+    # print("Enter DATA directory with Waters .RAW experiment files below:")
+    # expanduser to remove user account conflicts
+    userData = os.path.expanduser(
+        input('Paste database directory containing Waters .raw experiment files:'))
+    if os.path.isdir(userData):
+        return userData
     else:
-        output_dir = os.mkdir(output_dir)
-    return output_dir
+        print(r'ERROR: Data path cannot be found. Exiting.')
+        sys.exit()
 
-def check_dependencies():
-    '''
-    ensures apex3D executable and logfiles are accessible.
-    only checks default install dir.
 
-    Returns:
-        print: ensures subprocess can run or ends program
-    '''
-    condition1 = (os.path.isfile(apex_path) and os.path.isfile(apex_log_path))
-    if condition1:
-        print(r'Apex exectuable found.')
+dataDir = getDataDir()  # Make output Directory in Data folder
+
+#       Return names of experiments then full paths for Apex
+
+
+def getFilenames(directory):
+    return [name for name in os.listdir(dataDir) if os.path.isdir(os.path.join(dataDir, name))]
+
+
+expList = getFilenames(dataDir)
+
+#       Produce list of dirs for all experiment files in data folder
+
+
+def getDataPaths(directory):
+    return [os.path.join(dataDir, name) for name in expList if os.path.isdir(os.path.join(dataDir, name)) and name.lower().endswith((".raw"))]
+
+
+pathList = getDataPaths(dataDir)
+
+#       Find output folder or create one
+
+
+def makeOutputDir():
+
+    # ask for data directory or use current
+    print('Enter output directory path. Press Enter to create output folder here: ' + dataDir)
+    userOutPath = input('Enter output directory path: ')
+
+    # if the data directory is a path
+    if os.path.isdir(os.path.join(dataDir, "3D-data-extraction")):
+        print('- - - > Writing to existing /"3D-data-extraction/" directory. Old files will be overwritten.')
+        input('3D-data-extraction Data Export to...')
+        outputDir = os.path.join(dataDir, "3D-data-extraction")
+        return outputDir
+
+    elif os.path.isdir(os.path.join(userOutPath)):  # CHECK
+        outputDir = os.path.join(userOutPath)
+        return outputDir
+
     else:
-        print(r'Apex log and exectuable not present.')
-        print(r'Check DriftScope 2.2 installation in C:\DriftScope.')
-        sys.exit('-error-')
-    return print('extracting data')
+        os.mkdir(os.path.join(dataDir, "3D-data-extraction"))
+        outputDir = os.path.join(dataDir, "3D-data-extraction")
+        return outputDir
+        # outputDir = os.mkdir(os.path.join(dataDir, "3D-data-extraction"))
+        # outputDir = os.path.join(dataDir, "3D-data-extraction")
 
-def main():
-    '''
-    apex3D processing of Waters Synapt G2 TWIMS-MS .raw experiment file. 
-    
-    Args: 
-        -leThresholdCounts [string]: LOD low pass threshold in counts. 
-        -heThresholdCounts [string]: LOD high pass threshold in counts.
-    Returns:
-    '''
-    path_list = get_data_dir()
-    output_dir = get_output_dir()
-    check_dependencies()
-    print(f'Converting .raw files to .csv')
-    for i in path_list:
-        apex_goPath = ('{} -pRawDirName "{}" -outputDirName "{}" '
-        +'-outputUserDirName "{}" -leThresholdCounts 10 -msOnly 0 '
-        +'-heThresholdCounts 10 -lockMassZ1 556.2771 -bCSVOutput 1').format(
-            apex_path, i, output_dir, output_dir)
-        try:
-            apex_go = subprocess.Popen(
-            apex_goPath, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, shell=True)
-            out, err = apex_go.communicate()  # error reporting
-        except Exception:
-            print('Error. Check DriftScope installation.')
-            print(err)
-            sys.exit()
-        else:
-            pass
-        print(f'{i} extraction complete...')
-    print(f'TWIMS data extraction complete. output directory: ')
-    print(f'{output_dir}')
-    return
 
-# run main
-if __name__ == '__main__':
-    main()
+outputDir = makeOutputDir()
+
+# check makeoutput dir function ^^^
+
+
+#       Define batch strings and arguments for Apex3D
+def apexGo():
+    for i in pathList:
+        # The parameters -leThresholdCounts 10 -heThresholdCounts 10 below may be modified to adjust the minimum detectable peak threshold
+        apexGoPath = '{} -pRawDirName "{}" -outputDirName "{}" -outputUserDirName "{}" -leThresholdCounts 10 -msOnly 0 -heThresholdCounts 10 -lockMassZ1 556.2771 -bCSVOutput 1'.format(
+            apexPath, i, outputDir, outputDir)
+        apexGo = subprocess.Popen(
+            apexGoPath, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        out, err = apexGo.communicate()  # Error reporting available, if needed
+        print('Export Complete for ' + i + '\n')
+    print("All Exports Complete")
+
+
+apexGo()
+
+# Notes on APEX3D:
+# - Command line arguments: can be used for scripting with TWIMExtract. NOTE: not all features are available in command line mode.
+# 		General use: java -jar TWIMExtract.jar [ARGS]
+# 		Help: java -jar TWIMExtract.jar -h
+
+# 		NOTE: directories must be in quotes ("") if they contain spaces or other special characters
+# 		Arguments:
+# 			Required:
+# 			-i "[input directory]" : The full system path to the .raw file from which to extract
+# 			-o "[output directory]" : The full system path to the folder in which to save output
+# 			-m [mode] : the extraction mode (the dimension of data to save). 0 = RT, 1 = DT, 2 = MZ
+
+# 			Optional:
+# 			-f [func] : the individual function to extract. If not provided, extracts all functions
+# 			-r "[Range path]" : The full system path to a range (.txt) or rule (.rul) file to use
+# 				for extraction. If not provided, extracts the full ranges in all dimensions
+# 			-rulemode [true or false] : Whether to use range or rule file.
+# 			-combinemode [true or false] : Whether to combine all outputs from a single raw file
+# 				(e.g. multiple functions) into a single output.
+# 			-ms [true or false]: whether to save DT extractions in milliseconds (ms) or bins.
+
+# 		Example: The command below would extract DT information from all functions from the
+# 		"My_data.raw" file using the "my_range.txt" range file, combine the output using bins as the
+# 		DT information, and place it in C:\Extracted Data:
+
+# 		java -jar TWIMExtract.jar -i "C:\Data\My_data.raw" -o "C:\Extracted Data" -m 1
+# 			-r "C:\Ranges\my_range.txt" -rulemode false -combinemode true -ms false
