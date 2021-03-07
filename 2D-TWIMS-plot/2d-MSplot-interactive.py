@@ -44,12 +44,9 @@ def read_data_csv(csv_file, delimitchar=',', headers=True):
 
 data = read_data_csv(workingFile)
 
-data
-
-
 """
 
-plottnig with altair
+plotting with altair
 
 
 points = alt.Chart(cars).mark_point().encode(

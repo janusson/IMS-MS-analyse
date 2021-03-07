@@ -1,5 +1,6 @@
 # FUNC-importSAMMdata.py
-# Functions for processing TWIMS CSV datafiles * under construction *
+# Functions for processing TWIMS CSV datafiles 
+# * under construction *
 
 import os
 import pandas as pd
