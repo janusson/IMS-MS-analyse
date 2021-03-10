@@ -1,5 +1,5 @@
 from setuptools import find_packages, setup
-setup(name="",
+setup(name="ims-ms-analyse",
       version="0.1",
       description="Helper class to manage ion mobility files",
       author="Eric Janusson",
@@ -8,3 +8,4 @@ setup(name="",
       url="https://github.com/janusson/",
       packages=find_packages(),
       )
+      
